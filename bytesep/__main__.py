@@ -29,6 +29,7 @@ def download_checkpoints(args) -> NoReturn:
         "resunet143_subbtandtime_accompaniment_16.4dB_500k_steps_v2.pth?download=1",
     ]
 
+    local_checkpoints_dir = args.checkpoints_dir or  LOCAL_CHECKPOINTS_DIR
     os.makedirs(local_checkpoints_dir, exist_ok=True)
 
     for checkpoint_name in checkpoint_names:
@@ -51,7 +52,7 @@ def download_checkpoints(args) -> NoReturn:
     os.system('unzip "{}" -d {}'.format(local_zip_scripts_path, local_checkpoints_dir))
 
 
-def get_paths(source_type: str, model_type: str) -> [str, str]:
+def get_paths(local_checkpoints_dir: str, source_type: str, model_type: str) -> [str, str]:
     r"""Get config_yaml and checkpoint paths.
 
     Args:
@@ -62,8 +63,6 @@ def get_paths(source_type: str, model_type: str) -> [str, str]:
         config_yaml: str
         checkpoint_path: str
     """
-
-    local_checkpoints_dir = LOCAL_CHECKPOINTS_DIR
 
     error_message = "Checkpoint is incomplete, please download again!"
 
@@ -159,7 +158,9 @@ def separate(args) -> NoReturn:
     scale_volume = args.scale_volume
     cpu = args.cpu
 
-    config_yaml, checkpoint_path = get_paths(source_type, model_type)
+
+    local_checkpoints_dir = args.checkpoints_dir or LOCAL_CHECKPOINTS_DIR
+    config_yaml, checkpoint_path = get_paths(local_checkpoints_dir, source_type, model_type)
 
     if os.path.isfile(audio_path):
 
@@ -197,6 +198,7 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(dest="mode")
 
     parser_download_checkpoints = subparsers.add_parser("download-checkpoints")
+    parser_download_checkpoints.add_argument("--checkpoints_dir", type=str)
 
     parser_separate = subparsers.add_parser("separate")
     parser_separate.add_argument(
@@ -232,6 +234,7 @@ if __name__ == "__main__":
         default=False,
         help="Set this flag to use CPU.",
     )
+    parser_separate.add_argument("--checkpoints_dir", type=str)
 
     args = parser.parse_args()
 
